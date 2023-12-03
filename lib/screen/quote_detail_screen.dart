@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../model/quote.dart';
 
-class QuoteDetailsScreen extends StatelessWidget {
+class QuoteDetailScreen extends StatelessWidget {
   final String quoteId;
 
-  const QuoteDetailsScreen({
+  const QuoteDetailScreen({
     Key? key,
     required this.quoteId,
   }) : super(key: key);
