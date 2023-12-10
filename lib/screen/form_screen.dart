@@ -1,4 +1,4 @@
-import 'package:declarative_navigation/router/page_manager.dart';
+import 'package:declarative_navigation/routes/page_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

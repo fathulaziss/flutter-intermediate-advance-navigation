@@ -1,4 +1,5 @@
 import 'package:declarative_navigation/db/auth_repository.dart';
+import 'package:declarative_navigation/model/page_configuration.dart';
 import 'package:declarative_navigation/model/quote.dart';
 import 'package:declarative_navigation/screen/login_screen.dart';
 import 'package:declarative_navigation/screen/quote_detail_page.dart';
@@ -6,9 +7,10 @@ import 'package:declarative_navigation/screen/quote_detail_screen.dart';
 import 'package:declarative_navigation/screen/quotes_list_screen.dart';
 import 'package:declarative_navigation/screen/register_screen.dart';
 import 'package:declarative_navigation/screen/splash_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class MyRouterDelegate extends RouterDelegate
+class MyRouterDelegate extends RouterDelegate<PageConfiguration>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin {
   final GlobalKey<NavigatorState> _navigatorKey;
   final AuthRepository authRepository;
@@ -24,6 +26,7 @@ class MyRouterDelegate extends RouterDelegate
   List<Page> historyStack = [];
   bool? isLoggedIn;
   bool isRegister = false;
+  bool? isUnknown;
 
   _init() async {
     isLoggedIn = await authRepository.isLoggedIn();
@@ -119,7 +122,46 @@ class MyRouterDelegate extends RouterDelegate
   GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
 
   @override
-  Future<void> setNewRoutePath(configuration) async {
-    /* Do Nothing */
+  Future<void> setNewRoutePath(PageConfiguration configuration) async {
+    if (configuration.isUnknownPage) {
+      isUnknown = true;
+      isRegister = false;
+    } else if (configuration.isRegisterPage) {
+      isRegister = true;
+    } else if (configuration.isHomePage ||
+        configuration.isLoginPage ||
+        configuration.isSplashPage) {
+      isUnknown = false;
+      selectedQuote = null;
+      isRegister = false;
+    } else if (configuration.isDetailPage) {
+      isUnknown = false;
+      isRegister = false;
+      selectedQuote = configuration.quoteId.toString();
+    } else {
+      if (kDebugMode) {
+        print(' Could not set new route');
+      }
+    }
+    notifyListeners();
+  }
+
+  @override
+  PageConfiguration? get currentConfiguration {
+    if (isLoggedIn == null) {
+      return PageConfiguration.splash();
+    } else if (isRegister == true) {
+      return PageConfiguration.register();
+    } else if (isLoggedIn == false) {
+      return PageConfiguration.login();
+    } else if (isUnknown == true) {
+      return PageConfiguration.unknown();
+    } else if (selectedQuote == null) {
+      return PageConfiguration.home();
+    } else if (selectedQuote != null) {
+      return PageConfiguration.detailQuote(selectedQuote!);
+    } else {
+      return null;
+    }
   }
 }
